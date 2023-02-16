@@ -3,7 +3,7 @@ from telegram.ext import Updater, CommandHandler
 import datetime
 
 # Configurações do Bot
-TOKEN = "5533392014:AAFqC8Pzliv_2gFzfOAD2nR3FLvNfD4rYmk"
+TOKEN = "6281074525:AAGYgURYxPNjFnw-AVgCM-cI-_cNpY9-SlE"
 CHAT_ID = "1698409133"
 
 atendimentos = {}
