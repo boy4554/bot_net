@@ -1,57 +1,49 @@
 import telegram
+from telegram.ext import Updater, CommandHandler
 import datetime
-
 
 # Configurações do Bot
 TOKEN = "5533392014:AAFqC8Pzliv_2gFzfOAD2nR3FLvNfD4rYmk"
-CHAT_ID = '1698409133'
-
-# Cria o objeto do Bot
-bot = telegram.Bot(token="5533392014:AAFqC8Pzliv_2gFzfOAD2nR3FLvNfD4rYmk")
 CHAT_ID = "1698409133"
+
 atendimentos = {}
 
-def registrar_atendimento():
-    print("Registrando atendimento...")
-    data = datetime.date.today().strftime("%d/%m/%Y")
-    cliente = input("Nome do cliente: ")
-    problema = input("Descrição do problema: ")
-    os = input("Necessário abrir ordem de serviço? (S/N) ")
-    if os.upper() == "S":
-        os = "Sim"
-    else:
-        os = "Não"
-    resolvido_remotamente = input("O problema foi resolvido remotamente? (S/N) ")
-    if resolvido_remotamente.upper() == "S":
-        resolvido_remotamente = "Sim"
-    else:
-        resolvido_remotamente = "Não"
-    atendimentos[data] = {"cliente": cliente, "problema": problema, "os": os, "resolvido_remotamente": resolvido_remotamente}
-    print("Atendimento registrado com sucesso!")
+def start(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="Olá! Eu sou o seu bot de atendimento. Digite /ajuda para ver a lista de comandos disponíveis.")
 
-def exibir_relatorio():
-    print("Exibindo relatório de atendimentos...")
+def ajuda(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="Os comandos disponíveis são:\n/registrar - Registrar um novo atendimento\n/relatorio - Exibir o relatório de atendimentos")
+
+def registrar(update, context):
+    context.bot.send_message(chat_id=update.message.chat_id, text="Registrando atendimento...")
+    data = datetime.date.today().strftime("%d/%m/%Y")
+    cliente = update.message.text.replace("/registrar ", "")
+    atendimentos[data] = {"cliente": cliente}
+    context.bot.send_message(chat_id=update.message.chat_id, text="Atendimento registrado com sucesso!")
+
+def exibir_relatorio(update, context):
     relatorio = "Relatório de atendimentos:\n\n"
     for data, atendimento in atendimentos.items():
         relatorio += f"Data: {data}\n"
         relatorio += f"Cliente: {atendimento['cliente']}\n"
-        relatorio += f"Problema: {atendimento['problema']}\n"
-        relatorio += f"Necessário abrir ordem de serviço? {atendimento['os']}\n"
-        relatorio += f"Resolvido remotamente? {atendimento['resolvido_remotamente']}\n"
         relatorio += "\n"
-    bot.send_message(chat_id=CHAT_ID, text=relatorio)
+    context.bot.send_message(chat_id=update.message.chat_id, text=relatorio)
 
-# Menu principal
-while True:
-    print("1 - Registrar atendimento")
-    print("2 - Exibir relatório de atendimentos")
-    print("3 - Sair")
-    opcao = input("Digite uma opção: ")
-    if opcao == "1":
-        registrar_atendimento()
-    elif opcao == "2":
-        exibir_relatorio()
-    elif opcao == "3":
-        break
-    else:
-        print("Opção inválida. Digite novamente.")
+# Cria o objeto do Bot
+updater = Updater(TOKEN, use_context=True)
+
+# Cria os handlers dos comandos
+start_handler = CommandHandler('start', start)
+ajuda_handler = CommandHandler('ajuda', ajuda)
+registrar_handler = CommandHandler('registrar', registrar)
+relatorio_handler = CommandHandler('relatorio', exibir_relatorio)
+
+# Adiciona os handlers ao dispatcher
+dispatcher = updater.dispatcher
+dispatcher.add_handler(start_handler)
+dispatcher.add_handler(ajuda_handler)
+dispatcher.add_handler(registrar_handler)
+dispatcher.add_handler(relatorio_handler)
+
+# Inicia o bot
+updater.start_polling()
